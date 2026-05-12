@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<title>Deliverable 2 — Intelligence Gathering</title>
+<style>
+  @page { size: A4; margin: 10mm 12mm; }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; }
+  body {
+    font-family: -apple-system, "Helvetica Neue", Arial, sans-serif;
+    color: #1a1a1a;
+    font-size: 8.6pt;
+    line-height: 1.28;
+  }
+  h1 {
+    font-size: 13pt;
+    margin: 0 0 1mm 0;
+    color: #0b3d6b;
+    border-bottom: 2px solid #0b3d6b;
+    padding-bottom: 1mm;
+  }
+  .subtitle {
+    font-size: 8.2pt;
+    color: #555;
+    font-style: italic;
+    margin: 0 0 2mm 0;
+  }
+  h2 {
+    font-size: 10pt;
+    color: #0b3d6b;
+    margin: 2mm 0 1mm 0;
+    border-left: 3px solid #c2410c;
+    padding-left: 2mm;
+  }
+  h3 {
+    font-size: 8.8pt;
+    color: #222;
+    margin: 1.2mm 0 0.5mm 0;
+  }
+  p { margin: 0.6mm 0; }
+  ul { margin: 0.4mm 0 1mm 0; padding-left: 4mm; }
+  li { margin: 0.2mm 0; }
+  strong { color: #0b3d6b; }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 0.8mm 0;
+    font-size: 8.0pt;
+  }
+  th, td {
+    border: 1px solid #ccd5e0;
+    padding: 0.8mm 1.4mm;
+    text-align: left;
+    vertical-align: top;
+  }
+  th {
+    background: #0b3d6b;
+    color: white;
+    font-weight: 600;
+  }
+  tr:nth-child(even) td { background: #f8fafc; }
+  .twocol { display: flex; gap: 4mm; }
+  .twocol > div { flex: 1; }
+  .tldr {
+    margin-top: 1.5mm;
+    padding: 1.6mm 2.5mm;
+    background: #0b3d6b;
+    color: white;
+    border-radius: 2mm;
+    font-size: 8.6pt;
+  }
+  .tldr-label {
+    display: inline-block;
+    background: #c2410c;
+    color: white;
+    padding: 0.3mm 1.3mm;
+    border-radius: 1mm;
+    font-size: 7.2pt;
+    font-weight: 700;
+    letter-spacing: 0.4px;
+    margin-right: 2mm;
+  }
+  code {
+    font-family: ui-monospace, Menlo, monospace;
+    background: #eef2f6;
+    padding: 0.2mm 0.8mm;
+    border-radius: 1mm;
+    font-size: 7.6pt;
+  }
+  .footer {
+    margin-top: 1.5mm;
+    font-size: 7pt;
+    color: #888;
+    text-align: right;
+  }
+</style>
+</head>
+<body>
+
+<h1>Deliverable 2 — Intelligence Gathering · Détection précoce IT → OT, Marine Nationale</h1>
+<div class="subtitle">Joseph W. · 12 mai 2026 · Mission briefing, pas un rapport académique</div>
+
+<h2>A · The OSINT Framework</h2>
+
+<div class="twocol">
+  <div>
+    <h3>Source Mapping — d'où vient l'intel</h3>
+    <ul>
+      <li><strong>MITRE ATT&amp;CK</strong> (STIX/TAXII) — taxonomie des tactics/TTPs, base pour modéliser les kill chains</li>
+      <li><strong>NVD / NIST CVE feeds</strong> — vulnérabilités, scores CVSS, matching CPE actif↔CVE</li>
+      <li><strong>CISA KEV</strong> (<em>Known Exploited Vulnerabilities</em>) — filtre du bruit : seules les CVE <em>réellement</em> exploitées dans la nature</li>
+      <li><strong>ANSSI CERT-FR</strong> — bulletins souverains, alertes ciblant la défense FR (priorité doctrine)</li>
+      <li><strong>Doctrine publique ComCyber</strong> — Revue stratégique 2022, REX FREMM/FDI — cadre l'intention métier</li>
+      <li><strong>GitHub PoC repos</strong> — maturité d'un exploit (publié ? armé ? livré ?)</li>
+      <li><strong>Vendor advisories</strong> — Microsoft MSRC, Apache, Pulse Secure — détails techniques de remédiation</li>
+      <li><strong>Threat intel</strong> — Sekoia.io blog, BleepingComputer, abuse.ch — campagnes en cours (Sandworm, CyberAv3ngers)</li>
+    </ul>
+  </div>
+  <div>
+    <h3>Tooling — et pourquoi <em>celui-là</em> pour <em>cette</em> cible</h3>
+    <ul>
+      <li><code>Python + NetworkX</code> — la cible <strong>est</strong> un graphe (10k nœuds, 20k arêtes) ; NetworkX = natif, sans stack distribuée superflue</li>
+      <li><code>Neo4j</code> — format source ; requêtes Cypher pour traversées multi-sauts, valide aussi sans serveur (CSV)</li>
+      <li><code>pandas + regex</code> — parsing des descriptions d'événements pour le <code>SemanticMapper</code></li>
+      <li><code>Plotly + ipywidgets</code> — dashboard interactif <em>sans</em> déploiement web (souveraineté)</li>
+      <li><code>nvdlib</code> / <code>cve-search</code> — enrichissement automatisé CVE → CPE → asset</li>
+      <li><code>MITRE Navigator</code> — visualisation des chaînes d'attaque ATT&amp;CK</li>
+    </ul>
+    <p style="margin-top:1mm;"><strong>Pourquoi pas Spark/Elastic ?</strong> Volume modeste, on évite la sur-ingénierie. <strong>Pourquoi tout open-source ?</strong> Compatibilité doctrine défense + reproductibilité audit.</p>
+  </div>
+</div>
+
+<h2>B · Dataset Inventory — The Gold</h2>
+<table>
+  <tr>
+    <th style="width:24%">Dataset</th>
+    <th style="width:22%">Provenance</th>
+    <th style="width:14%">Freshness</th>
+    <th>Signal — <em>so what?</em></th>
+  </tr>
+  <tr>
+    <td><code>neo4j_dataset_50k</code> · 65 actifs IT/OT, 50 k events, 1 attaque</td>
+    <td>Fourni · Marine Nationale</td>
+    <td>Snapshot 1 mai 2026</td>
+    <td><strong>Cas d'école Purdue</strong> avec ground truth d'attaque (CVE-2021-41773, 11h–15h) → baseline de validation des détecteurs</td>
+  </tr>
+  <tr>
+    <td><code>generalisation/</code> · 9 855 actifs, 1 000 CVE/TTP, 2 000 events, 15 processus</td>
+    <td>Fourni · Marine Nationale</td>
+    <td>Snapshot 12 mai 2026</td>
+    <td><strong>Graphe à l'échelle SI</strong> + dimension métier → simulation cascade et impact processus à grande échelle</td>
+  </tr>
+  <tr>
+    <td>MITRE ATT&amp;CK Enterprise Matrix</td>
+    <td>attack.mitre.org · STIX/TAXII</td>
+    <td>Actualisation continue (v15.1)</td>
+    <td><strong>Référentiel kill chain</strong> → permet de chaîner les TTP de la base par phase (<code>simulate_attack_chain</code>)</td>
+  </tr>
+  <tr>
+    <td>NVD CVE feeds</td>
+    <td>nvd.nist.gov · JSON quotidien</td>
+    <td>Daily</td>
+    <td><strong>Score CVSS + CPE matching</strong> → filtre des targets non-applicables (asset non-vulnérable au CPE)</td>
+  </tr>
+  <tr>
+    <td>CISA KEV catalog</td>
+    <td>cisa.gov/kev · CSV quotidien</td>
+    <td>Daily, ~1 100 entries</td>
+    <td><strong>Priorisation</strong> : focus sur les CVE de la base déjà observées <em>in the wild</em></td>
+  </tr>
+  <tr>
+    <td>Bulletins CERT-FR (ANSSI)</td>
+    <td>cert.ssi.gouv.fr</td>
+    <td>Hebdomadaire</td>
+    <td><strong>Souveraineté + contexte FR/défense</strong> — alertes ciblées sur l'OIV/OSE</td>
+  </tr>
+</table>
+
+<h2>C · Intelligence Gaps &amp; Risks — what we don't know yet</h2>
+<table>
+  <tr>
+    <th style="width:38%">Missing link (le trou)</th>
+    <th>Mitigation — proxy/contournement</th>
+  </tr>
+  <tr>
+    <td><strong>Cartographie SI ↔ Métier (MOA).</strong> Aucune arête <code>asset → process</code> dans la base.</td>
+    <td><code>SyntheticMOAMapper</code> : combine PageRank (hubs polyvalents), signal sémantique des events, et distribution-cible métier réaliste (28 % Flottes, 22 % Maintenance, 3 % Douanes…).</td>
+  </tr>
+  <tr>
+    <td><strong>Transitions TTP→TTP validées.</strong> Tactics présentes mais pas les enchaînements canoniques.</td>
+    <td>Rejeu séquentiel sur l'ordre standard de la kill chain ATT&amp;CK + lateral movement aléatoire entre phases (<code>simulate_attack_chain</code>).</td>
+  </tr>
+  <tr>
+    <td><strong>État de patch réel par actif.</strong> Pas de calendrier de correctifs déployés.</td>
+    <td><code>generate_patch_schedule</code> : modèle probabiliste — critical 30-90j, high 90-180j, medium 180-365j, low 365-730j.</td>
+  </tr>
+  <tr>
+    <td><strong>Vérification CPE ↔ CVE.</strong> Table <code>targets</code> prise pour argent comptant sans validation de vulnérabilité.</td>
+    <td>Phase 3 : enrichissement <code>nvdlib</code> pour vérifier que l'asset.cpe matche le CPE de la CVE — filtre les fausses cibles.</td>
+  </tr>
+  <tr>
+    <td><strong>Attribution / threat intel campagnes.</strong> Aucune info sur l'acteur (APT, criminel, hacktiviste).</td>
+    <td>Croisement CISA KEV + MITRE Groups (Sandworm, CyberAv3ngers) en post-traitement — info contextuelle, non bloquante pour la détection.</td>
+  </tr>
+</table>
+
+<div class="tldr"><span class="tldr-label">TL;DR</span>L'intel <strong>technique</strong> (CVE, TTP, CVSS, CPE) est solide et publique. L'intel <strong>métier</strong> (cartographie SI ↔ processus) manque — mais on a un <em>proxy crédible</em> qui se substituera en 10 lignes le jour où la MOA fournit la vraie carto.</div>
+
+<div class="footer">Sources : NVD · MITRE ATT&CK v15.1 · CISA KEV · ANSSI CERT-FR · Doctrine ComCyber 2022 · datasets fournis Marine Nationale</div>
+
+</body>
+</html>

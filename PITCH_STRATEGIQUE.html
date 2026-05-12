@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<title>Strategic Pitch — Marine Nationale</title>
+<style>
+  @page { size: A4; margin: 12mm 14mm; }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; }
+  body {
+    font-family: -apple-system, "Helvetica Neue", Arial, sans-serif;
+    color: #1a1a1a;
+    font-size: 9.3pt;
+    line-height: 1.32;
+  }
+  h1 {
+    font-size: 14pt;
+    margin: 0 0 1mm 0;
+    color: #0b3d6b;
+    border-bottom: 2px solid #0b3d6b;
+    padding-bottom: 1mm;
+  }
+  .subtitle {
+    font-size: 9pt;
+    color: #555;
+    font-style: italic;
+    margin: 0 0 3mm 0;
+  }
+  h2 {
+    font-size: 10.5pt;
+    color: #0b3d6b;
+    margin: 2.5mm 0 1.2mm 0;
+    border-left: 3px solid #c2410c;
+    padding-left: 2mm;
+  }
+  h3 {
+    font-size: 9.5pt;
+    color: #222;
+    margin: 1.8mm 0 0.8mm 0;
+  }
+  p { margin: 0.8mm 0; }
+  ul { margin: 0.5mm 0 1mm 0; padding-left: 4mm; }
+  li { margin: 0.3mm 0; }
+  strong { color: #0b3d6b; }
+  .quote {
+    background: #f3f6fa;
+    border-left: 3px solid #0b3d6b;
+    padding: 1.5mm 2.5mm;
+    margin: 1mm 0;
+    font-size: 9.1pt;
+  }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 1mm 0;
+    font-size: 8.6pt;
+  }
+  th, td {
+    border: 1px solid #ccd5e0;
+    padding: 1mm 1.5mm;
+    text-align: left;
+    vertical-align: top;
+  }
+  th {
+    background: #0b3d6b;
+    color: white;
+    font-weight: 600;
+  }
+  tr:nth-child(even) td { background: #f8fafc; }
+  .tldr {
+    margin-top: 2mm;
+    padding: 2mm 3mm;
+    background: #0b3d6b;
+    color: white;
+    border-radius: 2mm;
+    font-size: 9.4pt;
+    font-weight: 500;
+  }
+  .tldr-label {
+    display: inline-block;
+    background: #c2410c;
+    color: white;
+    padding: 0.4mm 1.6mm;
+    border-radius: 1mm;
+    font-size: 7.8pt;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+    margin-right: 2mm;
+    vertical-align: middle;
+  }
+  .footer {
+    margin-top: 2mm;
+    font-size: 7.5pt;
+    color: #888;
+    text-align: right;
+  }
+</style>
+</head>
+<body>
+
+<h1>Strategic Pitch — Détection précoce de propagation IT → OT sur SI naval</h1>
+<div class="subtitle">Deliverable 1 · Marine Nationale · Joseph W. · 11 mai 2026</div>
+
+<h2>A · Define the Scope</h2>
+<div class="quote">
+  <strong>Problem statement —</strong> Sur un bâtiment moderne, les réseaux <strong>IT</strong> (bureautique, web) et <strong>OT</strong> (automates de propulsion, conduite de tir, navigation) ne sont plus isolés. Une compromission d'un poste utilisateur ou d'un serveur web peut, via la chaîne de dépendances, atteindre un PLC. La détection actuelle est <strong>tabulaire et binaire</strong> — elle ignore la topologie et ne mesure pas le <strong>blast radius</strong> d'une intrusion.
+</div>
+<div class="quote">
+  <strong>Objective —</strong> Construire un système de détection <strong>contextuelle</strong> d'attaques IT→OT exploitant le graphe d'actifs et dépendances, capable de :
+  <ul>
+    <li><strong>distinguer</strong> les exploits confinés à l'IT de ceux qui menacent l'OT critique ;</li>
+    <li><strong>scorer chaque alerte par son blast radius</strong> (nombre d'actifs OT atteignables) ;</li>
+    <li><strong>prioriser la réponse opérationnelle</strong> sous contrainte de bande passante en mer.</li>
+  </ul>
+</div>
+
+<h2>B · Establish the Relevancy</h2>
+<ul>
+  <li><strong>Doctrine officielle.</strong> La Marine identifie le <strong>cyber comme 5ᵉ milieu de combat</strong> (Revue stratégique 2022, doctrine LID du ComCyber). Le risque IT/OT est au cœur des programmes <strong>FREMM, FDI, SNA Suffren</strong>, dont les automates pilotent des fonctions vitales.</li>
+  <li><strong>Réalité du dataset.</strong> 65 actifs (30 WS, 15 serveurs Apache <em>vulnérables</em>, 10 HMI, 10 PLC) en architecture <strong>Purdue</strong>, avec exploit <code>CVE-2021-41773</code> injecté pendant 4 h : exactement le scénario d'un <em>initial access</em> sur poste passerelle pivotant vers l'OT.</li>
+  <li><strong>Différenciation.</strong> Plutôt qu'un n-ième IDS/SIEM générique, l'approche consomme <strong>nativement le graphe Neo4j</strong> et s'aligne sur la stack des SOC navals (Sekoia, Harfang Lab + couche graphe).</li>
+</ul>
+
+<h2>C · Argue the Importance — <em>So what?</em></h2>
+
+<h3>Ce qui change si on résout le problème</h3>
+<ul>
+  <li><strong>MTTD</strong> (Mean Time To Detect) de la propagation IT→OT ramené à <strong>&lt; 60 s</strong> vs plusieurs minutes en SOC tabulaire.</li>
+  <li><strong>Faux positifs divisés</strong> en pondérant par criticité graphe : exploit sur poste isolé (0 descendant OT) ≠ exploit sur serveur web pilotant 4 HMI.</li>
+  <li><strong>Disponibilité opérationnelle</strong> du bâtiment : éviter qu'un exploit web dégénère en arrêt propulsion ou panne de conduite de tir en zone d'opération.</li>
+</ul>
+
+<h3>Métriques en jeu</h3>
+<table>
+  <tr><th>Métrique</th><th>Référence sectorielle</th><th>Cible projet</th></tr>
+  <tr><td>Recall sur exploits OT-impactants</td><td>~70 % (IDS classique)</td><td><strong>≥ 95 %</strong></td></tr>
+  <tr><td>Précision sur alertes critiques</td><td>~30 %</td><td><strong>≥ 80 %</strong></td></tr>
+  <tr><td>MTTD propagation IT→OT</td><td>minutes</td><td><strong>&lt; 60 s</strong></td></tr>
+  <tr><td>Coût d'une indispo OT en opération</td><td>arrêt propulsion ≈ immobilisation tactique</td><td><strong>stratégique</strong></td></tr>
+</table>
+
+<h3>Pourquoi maintenant — et pas dans 6 mois ?</h3>
+<ul>
+  <li><strong>Menace active.</strong> Campagnes <code>Sandworm</code> (RU) et <code>CyberAv3ngers</code> (IR) ciblent des PLC depuis 2023–2025.</li>
+  <li><strong>Fenêtre programme.</strong> Les REX cyber FREMM/FDI alimentent <em>dès aujourd'hui</em> les specs du <strong>PA-NG</strong> — toute brique conçue ici peut être versée au standard.</li>
+  <li><strong>Effet d'aubaine donnée.</strong> Un dataset de 50 000 événements graphe étiqueté est rare : c'est la baseline reproductible pour les futurs <strong>DEFNET</strong>.</li>
+</ul>
+
+<div class="tldr"><span class="tldr-label">TL;DR</span>Détecter, scorer et prioriser les attaques IT→OT à l'échelle d'un bâtiment, en exploitant nativement le graphe d'actifs — <strong>pour qu'un exploit web ne devienne jamais une avarie de propulsion</strong>.</div>
+
+<div class="footer">Sources : dataset <code>neo4j_dataset_50k</code> · doctrine ComCyber · NIST NVD CVE-2021-41773 · Revue stratégique 2022</div>
+
+</body>
+</html>

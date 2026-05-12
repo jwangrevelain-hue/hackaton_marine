@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<title>Deliverable 2 — Intelligence Gathering</title>
+<style>
+  @page { size: A4; margin: 9mm 12mm; }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; }
+  body {
+    font-family: -apple-system, "Helvetica Neue", Arial, sans-serif;
+    color: #1a1a1a;
+    font-size: 7.8pt;
+    line-height: 1.32;
+    text-align: justify;
+    hyphens: auto;
+  }
+  h1 {
+    font-size: 12pt;
+    margin: 0 0 0.8mm 0;
+    color: #0b3d6b;
+    border-bottom: 1.5px solid #0b3d6b;
+    padding-bottom: 0.8mm;
+  }
+  .subtitle {
+    font-size: 7.6pt;
+    color: #555;
+    font-style: italic;
+    margin: 0 0 1.8mm 0;
+    text-align: left;
+  }
+  h2 {
+    font-size: 9.4pt;
+    color: #0b3d6b;
+    margin: 2mm 0 1.1mm 0;
+    border-left: 3px solid #c2410c;
+    padding-left: 2mm;
+    text-align: left;
+  }
+  h3 {
+    font-size: 8.4pt;
+    color: #222;
+    margin: 1.4mm 0 0.6mm 0;
+    text-align: left;
+  }
+  p {
+    margin: 0 0 1.1mm 0;
+    text-indent: 3.5mm;
+  }
+  p.lead {
+    text-indent: 0;
+  }
+  strong { color: #0b3d6b; }
+  em { color: #444; }
+  code {
+    font-family: ui-monospace, Menlo, monospace;
+    background: #eef2f6;
+    padding: 0.1mm 0.7mm;
+    border-radius: 1mm;
+    font-size: 7.6pt;
+  }
+  .footer {
+    margin-top: 2.2mm;
+    padding-top: 1mm;
+    border-top: 1px solid #ccd5e0;
+    font-size: 7pt;
+    color: #666;
+    text-align: left;
+    text-indent: 0;
+  }
+</style>
+</head>
+<body>
+
+<h1>Deliverable 2 — Intelligence Gathering · Détection précoce IT → OT, Marine Nationale</h1>
+<div class="subtitle">Joseph W. · 12 mai 2026 · Mission briefing</div>
+
+<h2>A · The OSINT Framework</h2>
+
+<h3>Source Mapping</h3>
+<p class="lead">Notre intelligence se construit sur huit canaux open-source complémentaires, choisis pour leur autorité et leur fraîcheur. Le référentiel <strong>MITRE ATT&amp;CK</strong>, accessible via flux STIX/TAXII, fournit la taxonomie complète des tactics et techniques d'attaquants — c'est la grammaire que nous utilisons pour modéliser les kill chains du notebook. Les flux quotidiens du <strong>NIST National Vulnerability Database (NVD)</strong> alimentent les scores CVSS et le matching CPE entre actif et CVE qui permet de filtrer les fausses cibles. Le catalogue <strong>CISA Known Exploited Vulnerabilities (KEV)</strong> sert de filtre du bruit : sur les 200&nbsp;000 CVE recensées, seules environ 1&nbsp;100 sont effectivement exploitées dans la nature, et c'est sur celles-là que nous concentrons la priorisation. En complément des sources américaines, les bulletins du <strong>CERT-FR (ANSSI)</strong> apportent la dimension souveraine et le focus défense français. La <strong>doctrine publique du ComCyber</strong> — Revue stratégique 2022, retours d'expérience FREMM/FDI — cadre l'intention métier. Enfin, les dépôts <strong>GitHub de PoC</strong>, les <strong>advisories vendor</strong> (Microsoft MSRC, Apache, Pulse Secure) et la <strong>veille threat intel</strong> (Sekoia.io, BleepingComputer, abuse.ch) nous donnent la maturité opérationnelle de chaque exploit et l'état des campagnes actives, notamment Sandworm et CyberAv3ngers qui ciblent activement les PLC depuis 2023.</p>
+
+<h3>Tooling</h3>
+<p class="lead">Notre stack technique reflète la nature de la cible. Le problème étant intrinsèquement un graphe (9&nbsp;855 actifs, 20&nbsp;000 dépendances), nous avons retenu <strong>Python avec NetworkX</strong> comme socle d'analyse : c'est l'outil natif pour les traversées multi-sauts, les calculs de centralité (PageRank pondéré pour identifier les hubs critiques), et la propagation BFS qui modélise la cascade. <strong>Neo4j</strong> est conservé comme format source, avec des requêtes Cypher en réserve pour les explorations complexes. Pour le pont entre événements et processus métier, <strong>pandas associé à des expressions régulières</strong> alimente notre <code>SemanticMapper</code>, dont le dictionnaire de connaissance reste explicitement éditable par un expert métier. L'interactivité est portée par <strong>Plotly et ipywidgets</strong>, choisis pour leur capacité à produire un dashboard riche sans déploiement web — un point important pour la souveraineté en environnement défense. Nous écartons délibérément Spark, Elasticsearch ou tout stack distribué : le volume ne le justifie pas, et la simplicité prime sur la sur-ingénierie. Toute la chaîne reste open-source et reproductible audit, ce qui est compatible doctrine défense et permet un déploiement air-gapped si nécessaire.</p>
+
+<h2>B · Dataset Inventory</h2>
+
+<p class="lead">Notre or tient en six sources principales, fraîchement collectées et toutes traçables. Le dataset <code>neo4j_dataset_50k</code>, fourni directement par la Marine Nationale comme cas d'école IT/OT, comporte 65 actifs en architecture Purdue, 50&nbsp;000 événements et une attaque scriptée (<code>CVE-2021-41773</code> sur Apache 2.4.49) avec <em>ground truth</em> complète sur la fenêtre 11h–15h du 1<sup>er</sup> mai 2026 — c'est notre baseline de validation des détecteurs. Le second dataset, <code>generalisation/</code>, daté du 12 mai 2026 et également fourni, passe à l'échelle d'un vrai système d'information d'entreprise : 9&nbsp;855 actifs, 1&nbsp;000 attaques (CVE et TTP confondues), 2&nbsp;000 événements répartis sur cinq catégories (Alerte, Incident, Attaque Détectée, Panne Système, Maintenance) et 15 processus métier ; c'est sur lui que se construit la simulation de cascade et l'impact processus à grande échelle.</p>
+
+<p>À ces deux sources internes s'ajoutent quatre référentiels publics. Le <strong>MITRE ATT&amp;CK Enterprise Matrix v15.1</strong>, mis à jour en continu, fournit la séquence canonique des phases de kill chain qui pilote notre fonction <code>simulate_attack_chain</code> — sans lui, nous simulerions des exploits isolés au lieu de scénarios réalistes avec lateral movement entre phases. Les <strong>flux NVD CVE quotidiens</strong> du NIST nous donnent les scores CVSS détaillés et permettent le matching CPE : quand le <code>cpe</code> d'un actif ne correspond pas au CPE attaquable d'une CVE, nous pouvons filtrer la cible comme fausse positive avant de lancer la cascade. Le <strong>catalogue CISA KEV</strong>, actualisé quotidiennement, joue le rôle de filtre de priorisation et distingue les CVE théoriquement dangereuses des CVE réellement exploitées dans la nature. Enfin, les <strong>bulletins hebdomadaires du CERT-FR</strong> apportent le contexte souverain et les alertes spécifiques aux opérateurs d'importance vitale (OIV) et services essentiels (OSE), qui constituent le périmètre réglementaire de la Marine.</p>
+
+<h2>C · Intelligence Gaps &amp; Risks</h2>
+
+<p class="lead">Cinq trous d'information subsistent, et nous les nommons sans détour. Le plus structurant est l'<strong>absence de cartographie SI ↔ Métier (MOA)</strong> : aucun fichier des datasets ne contient d'arête <code>asset → process</code>, alors que c'est précisément ce lien qui transforme un chiffre technique (« 312 actifs compromis ») en décision opérationnelle (« la Maintenance des Navires est à 38&nbsp;% de dégradation »). Nous le contournons via <code>SyntheticMOAMapper</code>, qui combine la position graphe (PageRank pondéré), le signal sémantique des descriptions d'événements et une distribution-cible métier réaliste, produisant un mapping structurellement plausible en attendant les ateliers MOA officiels.</p>
+
+<p>Le deuxième gap concerne les <strong>transitions TTP → TTP validées</strong> : nous avons les tactics dans la table <code>nodes_attacks_final.csv</code> mais pas les enchaînements canoniques observés sur le terrain, donc nous rejouons les kill chains sur l'ordre standard MITRE avec lateral movement aléatoire entre phases. Le troisième trou concerne l'<strong>état de patch réel par actif</strong> : il n'existe pas dans les données fournies. Nous le simulons via <code>generate_patch_schedule</code> selon des fenêtres calibrées sur la pratique industrielle — critical 30–90 jours, high 90–180 jours, medium 180–365 jours, low 365–730 jours — conformes aux recommandations NIST CSF et alignées sur les SLA observés en environnement défense. Le quatrième gap est la <strong>vérification CPE ↔ CVE</strong>, encore prise pour argent comptant : nous savons que cela laisse passer des <em>targets</em> non-applicables, et nous prévoyons l'enrichissement via <code>nvdlib</code> en phase 3 pour valider que l'actif visé est réellement vulnérable au CPE de la CVE déclarée. Enfin, nous n'avons pas d'<strong>attribution ni de threat intel sur les acteurs</strong> (APT, criminels, hacktivistes) ; nous prévoyons à terme un croisement CISA KEV avec MITRE Groups (Sandworm, CyberAv3ngers, Volt Typhoon) pour enrichir le contexte campagne, étape utile mais non-bloquante pour la détection elle-même.</p>
+
+<p>La règle que nous suivons sur l'ensemble de ces gaps est explicite et auditable : <strong>tout proxy est annoncé comme tel, daté, et conçu pour être remplacé en moins de dix lignes de code</strong> dès que la donnée réelle arrive. Cette discipline garantit que le projet ne s'enferme jamais dans ses propres synthèses et reste prêt à absorber la cartographie MOA, les calendriers de patch SCCM ou le mapping CPE NVD le jour où la Marine les fournit.</p>
+
+<div class="footer">Sources : NVD &middot; MITRE ATT&amp;CK v15.1 &middot; CISA KEV &middot; ANSSI CERT-FR &middot; Doctrine ComCyber 2022 &middot; datasets fournis Marine Nationale</div>
+
+</body>
+</html>
